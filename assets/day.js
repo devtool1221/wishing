@@ -510,6 +510,7 @@ function init(){
     document.getElementById("checkBtn").textContent = "Waiting...";
     document.getElementById("checkBtn").style.opacity = "0.5";
     document.getElementById("checkBtn").style.cursor = "not-allowed";
+    document.getElementById("hintBtn").hidden = true;
     return;
   }
 
