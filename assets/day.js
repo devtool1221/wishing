@@ -1,6 +1,7 @@
 const DAYS = [7,8,9,10,11,12,13,14];
 
 const storeKey = "vw_unlocks_v1";
+const visitorKey = "vw_visitors_v1";
 
 function loadUnlocks(){
   try { return JSON.parse(localStorage.getItem(storeKey)) || {}; }
@@ -8,6 +9,28 @@ function loadUnlocks(){
 }
 function saveUnlocks(obj){
   localStorage.setItem(storeKey, JSON.stringify(obj));
+}
+
+function trackVisitor(name) {
+  try {
+    const visitors = JSON.parse(localStorage.getItem(visitorKey)) || {};
+    const now = new Date().toISOString();
+    
+    if (!visitors[name]) {
+      visitors[name] = {
+        name: name,
+        firstVisit: now,
+        lastVisit: now,
+        clickCount: 1,
+        visits: [now]
+      };
+    } else {
+      visitors[name].lastVisit = now;
+      visitors[name].clickCount++;
+      visitors[name].visits.push(now);
+    }
+    localStorage.setItem(visitorKey, JSON.stringify(visitors));
+  } catch { }
 }
 
 function qs(name){
@@ -533,4 +556,29 @@ function init(){
   }
 }
 
+// Track visitor on page load
+function getOrCreateDeviceId() {
+  const deviceKey = "device_id_v1";
+  let deviceId = localStorage.getItem(deviceKey);
+  
+  if (!deviceId) {
+    // Generate unique device ID using browser fingerprinting
+    const ua = navigator.userAgent;
+    const lang = navigator.language;
+    const cores = navigator.hardwareConcurrency || "unknown";
+    const memory = navigator.deviceMemory || "unknown";
+    const timestamp = Date.now();
+    deviceId = btoa(`${ua}|${lang}|${cores}|${memory}|${timestamp}`).substring(0, 16);
+    localStorage.setItem(deviceKey, deviceId);
+  }
+  
+  return deviceId;
+}
+
+function initVisitorTracking() {
+  const deviceId = getOrCreateDeviceId();
+  trackVisitor(deviceId);
+}
+
+initVisitorTracking();
 init();
