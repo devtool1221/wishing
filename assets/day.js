@@ -459,7 +459,11 @@ function init(){
 
   // Set up event listeners first (before any returns)
   document.getElementById("hintBtn").addEventListener("click", () => {
-    setModal(true, "Hint", cfg.hint);
+    if (!todayMatch && !already){
+      setModal(true, "Oops!", "Don't cheat mahi😁");
+    } else {
+      setModal(true, "Hint", cfg.hint);
+    }
   });
   document.getElementById("closeModal").addEventListener("click", () => setModal(false));
   document.getElementById("modal").addEventListener("click", (e) => {
@@ -510,7 +514,6 @@ function init(){
     document.getElementById("checkBtn").textContent = "Waiting...";
     document.getElementById("checkBtn").style.opacity = "0.5";
     document.getElementById("checkBtn").style.cursor = "not-allowed";
-    document.getElementById("hintBtn").hidden = true;
     return;
   }
 
