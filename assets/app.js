@@ -3,6 +3,7 @@ const DAYS = [7,8,9,10,11,12,13,14];
 const storage = {
   key: "vw_unlocks_v1",
   orderKey: "vw_order_required_v1",
+  visitorKey: "vw_visitors_v1",
   load() {
     try { return JSON.parse(localStorage.getItem(this.key)) || {}; }
     catch { return {}; }
@@ -14,6 +15,34 @@ const storage = {
   },
   setOrderRequired(v){
     localStorage.setItem(this.orderKey, v ? "1" : "0");
+  },
+  trackVisitor(name) {
+    try {
+      const visitors = JSON.parse(localStorage.getItem(this.visitorKey)) || {};
+      const now = new Date().toISOString();
+      
+      if (!visitors[name]) {
+        visitors[name] = {
+          name: name,
+          firstVisit: now,
+          lastVisit: now,
+          clickCount: 1,
+          visits: [now]
+        };
+      } else {
+        visitors[name].lastVisit = now;
+        visitors[name].clickCount++;
+        visitors[name].visits.push(now);
+      }
+      localStorage.setItem(this.visitorKey, JSON.stringify(visitors));
+    } catch { }
+  },
+  getVisitors() {
+    try { return JSON.parse(localStorage.getItem(this.visitorKey)) || {}; }
+    catch { return {}; }
+  },
+  clearVisitors() {
+    localStorage.removeItem(this.visitorKey);
   }
 };
 
@@ -110,4 +139,29 @@ document.getElementById("musicBtn").addEventListener("click", () => {
   if (a.paused) a.play(); else a.pause();
 });
 
+// Track visitor on page load
+function getOrCreateDeviceId() {
+  const deviceKey = "device_id_v1";
+  let deviceId = localStorage.getItem(deviceKey);
+  
+  if (!deviceId) {
+    // Generate unique device ID using browser fingerprinting
+    const ua = navigator.userAgent;
+    const lang = navigator.language;
+    const cores = navigator.hardwareConcurrency || "unknown";
+    const memory = navigator.deviceMemory || "unknown";
+    const timestamp = Date.now();
+    deviceId = btoa(`${ua}|${lang}|${cores}|${memory}|${timestamp}`).substring(0, 16);
+    localStorage.setItem(deviceKey, deviceId);
+  }
+  
+  return deviceId;
+}
+
+function initVisitorTracking() {
+  const deviceId = getOrCreateDeviceId();
+  storage.trackVisitor(deviceId);
+}
+
+initVisitorTracking();
 render();
