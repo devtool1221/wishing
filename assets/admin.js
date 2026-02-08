@@ -1,6 +1,8 @@
 // Admin panel for tracking visitors
+const DAYS = [7,8,9,10,11,12,13,14];
 const adminStorage = {
   visitorKey: "vw_visitors_v1",
+  unlocksKey: "vw_unlocks_v1",
   getVisitors() {
     try { return JSON.parse(localStorage.getItem(this.visitorKey)) || {}; }
     catch { return {}; }
@@ -10,6 +12,16 @@ const adminStorage = {
       localStorage.removeItem(this.visitorKey);
       renderAdmin();
       alert("Visitor data cleared.");
+    }
+  },
+  unlockAll() {
+    if (confirm("Unlock all wishes?")) {
+      const unlocks = {};
+      DAYS.forEach(day => {
+        unlocks[String(day)] = true;
+      });
+      localStorage.setItem(this.unlocksKey, JSON.stringify(unlocks));
+      alert("All wishes unlocked!");
     }
   }
 };
@@ -158,6 +170,11 @@ function updateSortButtons(activeBtn) {
   document.querySelectorAll(".sortBtn").forEach((btn) => btn.classList.remove("active"));
   activeBtn.classList.add("active");
 }
+
+// Unlock all button
+document.getElementById("unlockAllBtn").addEventListener("click", () => {
+  adminStorage.unlockAll();
+});
 
 // Clear data button
 document.getElementById("clearBtn").addEventListener("click", () => {
