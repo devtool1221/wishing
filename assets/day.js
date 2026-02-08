@@ -523,7 +523,7 @@ function init(){
     c.height = innerHeight * (window.devicePixelRatio || 1);
   });
 
-  // Check if it's not today
+  // Check if it's not today and not already unlocked
   if (!todayMatch && !already){
     // Not today and not unlocked - show waiting message
     const area = document.getElementById("challengeArea");
@@ -540,19 +540,9 @@ function init(){
     return;
   }
 
-  // If today and not unlocked, show challenge
-  if (todayMatch){
+  // If today or already unlocked, show challenge (allow replay)
+  if (todayMatch || already){
     renderChallenge(day);
-  } else {
-    // Already unlocked but not today - show challenge as view only
-    const area = document.getElementById("challengeArea");
-    area.innerHTML = `
-      <div style="text-align: center; padding: 20px;">
-        <p class="muted">You already unlocked this day! 🎉</p>
-      </div>
-    `;
-    document.getElementById("checkBtn").disabled = true;
-    document.getElementById("checkBtn").textContent = "Already Unlocked";
   }
 }
 
