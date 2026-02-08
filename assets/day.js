@@ -65,8 +65,8 @@ const CONFIG = {
   },
   9: {
     name: "Chocolate Day",
-    challenge: { type: "quiz", question: "Which one is NOT a type of chocolate?", options: ["Dark", "Milk", "Ruby", "Solar"], correctIndex: 3 },
-    hint: "Three are real categories you can find in shops.",
+    challenge: { type: "quiz", question: "Which is the most sweetest thing?", options: ["Dairy Milk", "KitKat", "CadBury", "Milk Candy🤭"], correctIndex: 3 },
+    hint: "how can you think these things are sweeter than you?😜",
     wish: "🍫 Chocolate Day Wish: Life is sweeter with you in it. May your day be wrapped in smiles and sprinkled with joy."
   },
   10: {
@@ -104,6 +104,7 @@ const CONFIG = {
 let selectedOption = null;
 let tapState = null;
 let memoryState = null;
+let day9QuizAttempts = 0;
 
 function setModal(open, title="", body=""){
   const modal = document.getElementById("modal");
@@ -232,6 +233,7 @@ function renderChallenge(day){
 
     const grid = document.createElement("div");
     grid.className = "optionGrid";
+    grid.id = "quizGrid";
     cfg.challenge.options.forEach((opt, idx) => {
       const o = document.createElement("div");
       o.className = "option";
@@ -429,6 +431,8 @@ function checkChallenge(day){
     return normalize(v) === normalize(ch.answer);
   }
   if (ch.type === "quiz"){
+    // Day 9 quiz is special - always false (user must fail 4 times to get hint)
+    if (day === 9) return false;
     return selectedOption === ch.correctIndex;
   }
   if (ch.type === "code"){
@@ -463,6 +467,11 @@ function init(){
     return;
   }
 
+  // Reset day 9 quiz attempts
+  if (day === 9) {
+    day9QuizAttempts = 0;
+  }
+
   const cfg = CONFIG[day];
   document.title = `Feb ${day} — ${cfg.name}`;
   document.getElementById("dayTitle").textContent = `Feb ${day} — ${cfg.name}`;
@@ -488,15 +497,58 @@ function init(){
       setModal(true, "Hint", cfg.hint);
     }
   });
-  document.getElementById("closeModal").addEventListener("click", () => setModal(false));
+  document.getElementById("closeModal").addEventListener("click", () => {
+    setModal(false);
+    // If hint was shown for day 9 quiz, unlock the wish
+    if (day === 9 && localStorage.getItem("day9_hint_shown") === "true") {
+      localStorage.removeItem("day9_hint_shown");
+      unlockDay(day);
+      alert("Unlocked! Scroll down for your wish ✨");
+    }
+  });
   document.getElementById("modal").addEventListener("click", (e) => {
-    if (e.target.id === "modal") setModal(false);
+    if (e.target.id === "modal") {
+      setModal(false);
+      // If hint was shown for day 9 quiz, unlock the wish
+      if (day === 9 && localStorage.getItem("day9_hint_shown") === "true") {
+        localStorage.removeItem("day9_hint_shown");
+        unlockDay(day);
+        alert("Unlocked! Scroll down for your wish ✨");
+      }
+    }
   });
 
   document.getElementById("backBtn").addEventListener("click", () => window.location.href = "index.html");
 
   document.getElementById("checkBtn").addEventListener("click", () => {
-    if (!todayMatch) return; // Don't allow submission if not today
+    if (!todayMatch && !already) return; // Don't allow submission if not today and not unlocked
+    
+    // Special logic for day 9 quiz
+    if (day === 9 && cfg.challenge.type === "quiz") {
+      day9QuizAttempts++;
+      
+      if (day9QuizAttempts < 4) {
+        // Show wrong on all options
+        const grid = document.getElementById("quizGrid");
+        if (grid) {
+          [...grid.children].forEach(opt => {
+            opt.style.background = "rgba(255, 77, 109, 0.3)";
+            opt.style.borderColor = "rgba(255, 77, 109, 0.6)";
+            opt.style.color = "var(--hot)";
+          });
+        }
+        alert(`Not yet! Try again (Attempt ${day9QuizAttempts}/4)`);
+      } else if (day9QuizAttempts === 4) {
+        // After 4 attempts, show hint and unlock
+        alert("You've tried enough. Let me give you a hint...");
+        setModal(true, "Hint", cfg.hint);
+        
+        // Store flag that hint was shown for day 9
+        localStorage.setItem("day9_hint_shown", "true");
+      }
+      return;
+    }
+    
     const ok = checkChallenge(day);
     if (ok){
       unlockDay(day);
