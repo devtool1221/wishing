@@ -2,6 +2,7 @@ const DAYS = [7,8,9,10,11,12,13,14];
 
 const storeKey = "vw_unlocks_v1";
 const visitorKey = "vw_visitors_v1";
+const playableKey = "vw_playable_v1";
 
 function loadUnlocks(){
   try { return JSON.parse(localStorage.getItem(storeKey)) || {}; }
@@ -9,6 +10,10 @@ function loadUnlocks(){
 }
 function saveUnlocks(obj){
   localStorage.setItem(storeKey, JSON.stringify(obj));
+}
+function loadPlayable(){
+  try { return JSON.parse(localStorage.getItem(playableKey)) || {}; }
+  catch { return {}; }
 }
 
 function trackVisitor(name) {
@@ -478,7 +483,9 @@ function init(){
   document.getElementById("daySubtitle").textContent = `Beat today’s challenge to unlock the wish.`;
 
   const unlocks = loadUnlocks();
+  const playable = loadPlayable();
   const already = !!unlocks[String(day)];
+  const isPlayable = !!playable[String(day)];
   const todayMatch = isToday(day);
 
   document.getElementById("statusPill").textContent = already ? "Unlocked ✨" : "Locked 🔒";
@@ -491,7 +498,7 @@ function init(){
 
   // Set up event listeners first (before any returns)
   document.getElementById("hintBtn").addEventListener("click", () => {
-    if (!todayMatch && !already){
+    if (!todayMatch && !already && !isPlayable){
       setModal(true, "Oops!", "Don't cheat mahi😁");
     } else {
       setModal(true, "Hint", cfg.hint);
@@ -521,7 +528,7 @@ function init(){
   document.getElementById("backBtn").addEventListener("click", () => window.location.href = "index.html");
 
   document.getElementById("checkBtn").addEventListener("click", () => {
-    if (!todayMatch && !already) return; // Don't allow submission if not today and not unlocked
+    if (!todayMatch && !already && !isPlayable) return; // Don't allow submission if not today and not unlocked and not playable
     
     // Special logic for day 9 quiz
     if (day === 9 && cfg.challenge.type === "quiz") {
@@ -576,9 +583,9 @@ function init(){
     c.height = innerHeight * (window.devicePixelRatio || 1);
   });
 
-  // Check if it's not today and not already unlocked
-  if (!todayMatch && !already){
-    // Not today and not unlocked - show waiting message
+  // Check if it's not today and not already unlocked and not playable
+  if (!todayMatch && !already && !isPlayable){
+    // Not today and not unlocked and not playable - show waiting message
     const area = document.getElementById("challengeArea");
     area.innerHTML = `
       <div style="text-align: center; padding: 40px 20px;">
@@ -593,8 +600,8 @@ function init(){
     return;
   }
 
-  // If today or already unlocked, show challenge (allow replay)
-  if (todayMatch || already){
+  // If today or already unlocked or playable, show challenge (allow replay)
+  if (todayMatch || already || isPlayable){
     renderChallenge(day);
   }
 }
