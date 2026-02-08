@@ -21,7 +21,9 @@ const adminStorage = {
         unlocks[String(day)] = true;
       });
       localStorage.setItem(this.unlocksKey, JSON.stringify(unlocks));
-      alert("All wishes unlocked!");
+      if (confirm("All wishes unlocked! Go play now?")) {
+        window.location.href = "index.html";
+      }
     }
   }
 };
