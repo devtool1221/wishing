@@ -528,14 +528,15 @@ function init(){
       day9QuizAttempts++;
       
       if (day9QuizAttempts < 4) {
-        // Show wrong on all options
+        // Show wrong on the selected option only
         const grid = document.getElementById("quizGrid");
-        if (grid) {
-          [...grid.children].forEach(opt => {
-            opt.style.background = "rgba(255, 77, 109, 0.3)";
-            opt.style.borderColor = "rgba(255, 77, 109, 0.6)";
-            opt.style.color = "var(--hot)";
-          });
+        if (grid && selectedOption !== null) {
+          const selectedOpt = grid.children[selectedOption];
+          if (selectedOpt) {
+            selectedOpt.style.background = "rgba(255, 77, 109, 0.3)";
+            selectedOpt.style.borderColor = "rgba(255, 77, 109, 0.6)";
+            selectedOpt.style.color = "var(--hot)";
+          }
         }
         alert(`Not yet! Try again (Attempt ${day9QuizAttempts}/4)`);
       } else if (day9QuizAttempts === 4) {
